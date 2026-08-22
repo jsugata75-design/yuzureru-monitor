@@ -1,0 +1,15 @@
+# 実行時スナップショット(構造変化のデバッグ用。リポジトリには含めない)
+snapshots/page_*.html
+
+# ベースライン(snapshots/baseline_*.html)は判定基準の証拠として残す
+
+# ntfyトピック名は購読・投稿の鍵になるのでコミットしない
+NTFY_TOPIC.txt
+monitor.py.bak
+
+__pycache__/
+*.pyc
+.DS_Store
+
+# 実行時状態(クラウド側はActionsキャッシュで持つのでコミットしない)
+state.json

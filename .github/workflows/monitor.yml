@@ -1,0 +1,50 @@
+name: yuzureru-monitor
+
+on:
+  schedule:
+    # GitHub Actions の cron は UTC。JST = UTC+9。5分がGitHubの最短間隔。
+    # 実測で枠は15〜18分で埋まるため日中は最短に張り付ける。
+    - cron: '*/5 0-14,21-23 * * *'    # JST 6:00〜24:00 を5分間隔
+    - cron: '*/15 15-20 * * *'        # JST 0:00〜 6:00 を15分間隔
+  workflow_dispatch:                  # 手動実行(疎通確認用)
+
+permissions:
+  contents: read
+
+concurrency:
+  group: yuzureru-monitor
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # 前回の状態を復元(重複通知の抑止とページ位置キャッシュに使う)
+      - uses: actions/cache/restore@v4
+        with:
+          path: state.json
+          key: yuzureru-state-${{ github.run_id }}
+          restore-keys: yuzureru-state-
+
+      - name: 監視実行
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+          MONITOR_UA: ${{ secrets.MONITOR_UA }}
+        run: python3 monitor.py
+
+      # 失敗時も保存する(状態が飛ぶと重複通知が出るだけで、取りこぼしはしない)
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: state.json
+          key: yuzureru-state-${{ github.run_id }}
