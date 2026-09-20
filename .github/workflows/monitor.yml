@@ -1,11 +1,10 @@
 name: yuzureru-monitor
 
 on:
-  schedule:
-    # GitHub Actions の cron は UTC。JST = UTC+9。5分がGitHubの最短間隔。
-    # 実測で枠は15〜18分で埋まるため日中は最短に張り付ける。
-    - cron: '*/5 0-14,21-23 * * *'    # JST 6:00〜24:00 を5分間隔
-    - cron: '*/15 15-20 * * *'        # JST 0:00〜 6:00 を15分間隔
+  # 2026-09-20 監視終了（本人指示）。定期実行は止め、手動実行だけ残す。
+  # 再開するなら schedule を戻す:
+  #   - cron: '*/5 0-14,21-23 * * *'    # JST 6:00〜24:00 を5分間隔
+  #   - cron: '*/15 15-20 * * *'        # JST 0:00〜 6:00 を15分間隔
   workflow_dispatch:                  # 手動実行(疎通確認用)
 
 permissions:
